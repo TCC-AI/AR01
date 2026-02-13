@@ -5,8 +5,10 @@ import Landing from './components/layout/Landing';
 import Login from './components/auth/Login';
 import Register from './components/auth/Register';
 import Dashboard from './components/dashboard/Dashboard';
-import SceneEditor from './components/ar/SceneEditor';
-import ARViewer from './components/ar/ARViewer';
+import WarehouseView from './components/warehouse/WarehouseView';
+import WarehouseSetup from './components/warehouse/WarehouseSetup';
+import InventoryPage from './components/inventory/InventoryPage';
+import ARNavigationPage from './components/navigation/ARNavigationPage';
 import Subscription from './components/dashboard/Subscription';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -23,7 +25,9 @@ export default function App() {
       <Route path="/" element={<Landing />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
-      <Route path="/ar/:sceneId" element={<ARViewer />} />
+
+      {/* AR Navigation (can be accessed without full auth for shared links) */}
+      <Route path="/navigate/:warehouseId/:productId" element={<ARNavigationPage />} />
 
       <Route
         path="/app"
@@ -34,7 +38,10 @@ export default function App() {
         }
       >
         <Route index element={<Dashboard />} />
-        <Route path="scene/:sceneId" element={<SceneEditor />} />
+        <Route path="warehouse/:warehouseId" element={<WarehouseView />} />
+        <Route path="warehouse/:warehouseId/setup" element={<WarehouseSetup />} />
+        <Route path="warehouse/:warehouseId/inventory" element={<InventoryPage />} />
+        <Route path="warehouse/:warehouseId/navigate" element={<ARNavigationPage />} />
         <Route path="subscription" element={<Subscription />} />
       </Route>
 

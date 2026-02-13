@@ -3,9 +3,13 @@ import type {
   AuthResponse,
   LoginRequest,
   RegisterRequest,
-  ARScene,
+  Warehouse,
+  Zone,
+  Product,
+  NavigationPath,
   PaginatedResponse,
   SubscriptionPlan,
+  ProductSearchResult,
 } from '@shared/types';
 import { useAuthStore } from '../stores/authStore';
 
@@ -54,29 +58,118 @@ export const authApi = {
   me: () => request<AuthResponse>('/auth/me'),
 };
 
-// Scenes API
-export const scenesApi = {
-  list: (page = 1, pageSize = 20) =>
-    request<ARScene[]>(`/scenes?page=${page}&pageSize=${pageSize}`) as Promise<
-      PaginatedResponse<ARScene>
-    >,
+// Warehouse API
+export const warehouseApi = {
+  list: () => request<Warehouse[]>('/warehouses'),
 
-  get: (id: string) => request<ARScene>(`/scenes/${id}`),
+  get: (id: string) => request<Warehouse & { zones: Zone[]; scan_photos: unknown[] }>(`/warehouses/${id}`),
 
-  create: (scene: Partial<ARScene>) =>
-    request<ARScene>('/scenes', {
+  create: (data: Partial<Warehouse>) =>
+    request<Warehouse>('/warehouses', {
       method: 'POST',
-      body: JSON.stringify(scene),
+      body: JSON.stringify(data),
     }),
 
-  update: (id: string, scene: Partial<ARScene>) =>
-    request<ARScene>(`/scenes/${id}`, {
+  update: (id: string, data: Partial<Warehouse>) =>
+    request<Warehouse>(`/warehouses/${id}`, {
       method: 'PUT',
-      body: JSON.stringify(scene),
+      body: JSON.stringify(data),
     }),
 
   delete: (id: string) =>
-    request<void>(`/scenes/${id}`, { method: 'DELETE' }),
+    request<void>(`/warehouses/${id}`, { method: 'DELETE' }),
+
+  addZone: (warehouseId: string, zone: Partial<Zone>) =>
+    request<Zone>(`/warehouses/${warehouseId}/zones`, {
+      method: 'POST',
+      body: JSON.stringify(zone),
+    }),
+};
+
+// Product API
+export const productApi = {
+  list: (warehouseId: string, page = 1, pageSize = 50) =>
+    request<Product[]>(
+      `/products?warehouseId=${warehouseId}&page=${page}&pageSize=${pageSize}`,
+    ) as Promise<PaginatedResponse<Product>>,
+
+  get: (id: string) => request<Product>(`/products/${id}`),
+
+  create: (data: Partial<Product> & { warehouseId: string }) =>
+    request<Product>('/products', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
+  update: (id: string, data: Partial<Product>) =>
+    request<Product>(`/products/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    }),
+
+  delete: (id: string) =>
+    request<void>(`/products/${id}`, { method: 'DELETE' }),
+
+  search: (warehouseId: string, query: string) =>
+    request<ProductSearchResult[]>('/products/search', {
+      method: 'POST',
+      body: JSON.stringify({ warehouseId, query }),
+    }),
+
+  recognize: (imageBase64: string) =>
+    request<{ name: string; category: string; description: string; suggestedAttributes: Record<string, string> }>(
+      '/products/recognize',
+      {
+        method: 'POST',
+        body: JSON.stringify({ imageBase64 }),
+      },
+    ),
+};
+
+// Navigation API
+export const navigationApi = {
+  getPath: (warehouseId: string, startPosition: { x: number; y: number; z: number }, targetProductId: string) =>
+    request<NavigationPath>('/navigation/path', {
+      method: 'POST',
+      body: JSON.stringify({ warehouseId, startPosition, targetProductId }),
+    }),
+
+  getMultiPath: (
+    warehouseId: string,
+    startPosition: { x: number; y: number; z: number },
+    targetProductIds: string[],
+  ) =>
+    request<NavigationPath & { products: Product[]; optimizedOrder: string[] }>(
+      '/navigation/multi',
+      {
+        method: 'POST',
+        body: JSON.stringify({ warehouseId, startPosition, targetProductIds }),
+      },
+    ),
+};
+
+// Spatial Mapping API
+export const spatialApi = {
+  analyzePhoto: (warehouseId: string, imageBase64: string) =>
+    request<{ photo: unknown; analysis: unknown }>('/spatial/analyze-photo', {
+      method: 'POST',
+      body: JSON.stringify({ warehouseId, imageBase64 }),
+    }),
+
+  generateMap: (warehouseId: string) =>
+    request<unknown>('/spatial/generate-map', {
+      method: 'POST',
+      body: JSON.stringify({ warehouseId }),
+    }),
+
+  getStatus: (warehouseId: string) =>
+    request<{
+      status: string;
+      photoCount: number;
+      hasSpatialData: boolean;
+      requiredPhotos: number;
+      coveragePercent: number;
+    }>(`/spatial/${warehouseId}/status`),
 };
 
 // Subscription API
@@ -90,23 +183,4 @@ export const subscriptionApi = {
     }),
 
   manage: () => request<{ url: string }>('/subscription/manage'),
-};
-
-// Upload API
-export const uploadApi = {
-  model: async (file: File) => {
-    const token = useAuthStore.getState().token;
-    const formData = new FormData();
-    formData.append('model', file);
-
-    const response = await fetch(`${API_URL}/upload/model`, {
-      method: 'POST',
-      headers: {
-        ...(token && { Authorization: `Bearer ${token}` }),
-      },
-      body: formData,
-    });
-
-    return response.json() as Promise<ApiResponse<{ url: string; name: string }>>;
-  },
 };
