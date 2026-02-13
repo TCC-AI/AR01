@@ -1,0 +1,27 @@
+{
+  "name": "ar01-saas",
+  "version": "1.0.0",
+  "description": "AR Mobile/Tablet SaaS Platform",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently \"npm run dev:client\" \"npm run dev:server\"",
+    "dev:client": "cd client && npx vite --host",
+    "dev:server": "cd server && npx tsx watch src/index.ts",
+    "build": "npm run build:client && npm run build:server",
+    "build:client": "cd client && npx vite build",
+    "build:server": "cd server && npx tsc",
+    "start": "node server/dist/index.js",
+    "lint": "eslint . --ext .ts,.tsx",
+    "typecheck": "tsc --noEmit"
+  },
+  "workspaces": [
+    "client",
+    "server",
+    "shared"
+  ],
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "concurrently": "^8.2.2",
+    "typescript": "^5.3.3"
+  }
+}
