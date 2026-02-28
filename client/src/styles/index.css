@@ -1,0 +1,80 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    touch-action: manipulation;
+  }
+
+  body {
+    @apply min-h-screen antialiased;
+    overscroll-behavior: none;
+  }
+
+  /* Safe area insets for notched devices */
+  .safe-area-top {
+    padding-top: env(safe-area-inset-top);
+  }
+
+  .safe-area-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-primary-600 hover:bg-primary-700 active:bg-primary-800
+      text-white font-medium rounded-xl px-6 py-3
+      transition-colors duration-150
+      disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-secondary {
+    @apply bg-slate-700 hover:bg-slate-600 active:bg-slate-500
+      text-white font-medium rounded-xl px-6 py-3
+      transition-colors duration-150
+      disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .card {
+    @apply bg-slate-800 rounded-2xl p-6 border border-slate-700;
+  }
+
+  .input {
+    @apply w-full bg-slate-800 border border-slate-600 rounded-xl px-4 py-3
+      text-white placeholder-slate-400
+      focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent
+      transition-all duration-150;
+  }
+
+  /* AR overlay styles */
+  .ar-overlay {
+    @apply fixed inset-0 z-50 pointer-events-none;
+  }
+
+  .ar-overlay > * {
+    @apply pointer-events-auto;
+  }
+
+  .ar-controls {
+    @apply absolute bottom-0 left-0 right-0 safe-area-bottom
+      flex items-center justify-center gap-4 p-4;
+  }
+}
+
+@layer utilities {
+  .glass {
+    @apply bg-white/10 backdrop-blur-md border border-white/20;
+  }
+
+  .text-gradient {
+    @apply bg-gradient-to-r from-primary-400 to-purple-400
+      bg-clip-text text-transparent;
+  }
+}
